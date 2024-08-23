@@ -5,10 +5,21 @@ import { UserContext } from '../context/UserContext';
 
 const Cart = () => {
     const { cart, pizzas, increaseQuantity, decreaseQuantity, calculateTotal } = usePizzaCart();
-    const { token } = useContext(UserContext);
+    const { token, checkoutCart, notification } = useContext(UserContext);
 
     const getPizzaDetails = (pizzaId) => {
         return pizzas.find(pizza => pizza.id === pizzaId);
+    };
+
+    const handleCheckout = async () => {
+        console.log("Cart antes de enviar al checkout:", cart);
+        const success = await checkoutCart(cart);
+        if (success) {
+            // Opcional: Redirigir al usuario a una página de confirmación
+            console.log("Compra completada con éxito");
+        } else {
+            console.log("Error en el proceso de checkout");
+        }
     };
 
     if (cart.length === 0) {
@@ -81,7 +92,7 @@ const Cart = () => {
                                             })}
                                             <tr>
                                                 <td colSpan="3" className="text-end"><strong>Total:</strong></td>
-                                                <td><strong>{calculateTotal.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</strong></td>
+                                                <td><strong>{calculateTotal().toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</strong></td>
                                             </tr>
                                         </tbody>
                                     </Table>
@@ -93,10 +104,16 @@ const Cart = () => {
                                     <Button
                                         variant="success"
                                         className="mt-3"
+                                        onClick={handleCheckout}
                                         disabled={!token}
                                     >
                                         Pagar
                                     </Button>
+                                    {notification.message && (
+                                        <Alert variant={notification.type} className="mt-3">
+                                            {notification.message}
+                                        </Alert>
+                                    )}
                                 </Card.Body>
                             </Col>
                         </Row>
@@ -108,4 +125,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
 

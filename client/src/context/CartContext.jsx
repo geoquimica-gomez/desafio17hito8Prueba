@@ -38,7 +38,7 @@ export const CartProvider = ({ children }) => {
         });
     }, []);
 
-    const calculateTotal = useMemo(() => {
+    const calculateTotal = useCallback(() => {
         return cart.reduce((total, pizza) => total + pizza.price * pizza.quantity, 0);
     }, [cart]);
 
@@ -48,7 +48,7 @@ export const CartProvider = ({ children }) => {
         increaseQuantity,
         decreaseQuantity,
         calculateTotal
-    }), [cart, calculateTotal, addToCart, increaseQuantity, decreaseQuantity]);
+    }), [cart, addToCart, increaseQuantity, decreaseQuantity, calculateTotal]);
 
     return (
         <CartContext.Provider value={value}>

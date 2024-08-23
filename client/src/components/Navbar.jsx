@@ -63,7 +63,7 @@ const NavbarApp = () => {
                             overlay={<Tooltip id="tooltip-cart">Ver carrito de compras</Tooltip>}
                         >
                             <NavLink to="/cartShooping" className={`btn2 ${setActiveClass}`}>
-                                🛒Total: {calculateTotal.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
+                                🛒Total: {calculateTotal().toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
                             </NavLink>
                         </OverlayTrigger>
                     </Nav>
