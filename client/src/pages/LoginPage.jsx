@@ -1,35 +1,33 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Container, Row, Col, Form, Button, InputGroup, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { ToastContainer, toast } from 'react-toastify';
+import { UserContext } from '../context/UserContext';
 
 const LoginPage = () => {
-    // Estados del formulario
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    // Estado para los errores
     const [error, setError] = useState(false);
+    const { login, notification } = useContext(UserContext);
 
-    // Funciones para validar los campos
     const isEmailValid = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isPasswordValid = () => password.length >= 6;
 
-    // Función antes de enviar el formulario
-    const validarDatos = (e) => {
+    const validarDatos = async (e) => {
         e.preventDefault();
-        // Validación
+
         if (!email.trim() || !password.trim() || !isEmailValid() || !isPasswordValid()) {
             setError(true);
             return;
         }
 
         setError(false);
-        setEmail("");
-        setPassword("");
 
-        toast.success("Has iniciado sesión correctamente!");
+        try {
+            await login(email, password);
+        } catch (error) {
+            console.error("Error en la autenticación:", error);
+        }
     };
 
     return (
@@ -56,6 +54,11 @@ const LoginPage = () => {
                 <Col md={8}>
                     <h1>Inicia Sesión</h1>
                     <h6>Tu pizza favorita te espera. ¿Listo para el reencuentro?</h6>
+                    {notification.message && (
+                        <Alert variant={notification.type}>
+                            {notification.message}
+                        </Alert>
+                    )}
                     <Form className='customForm' onSubmit={validarDatos}>
                         <Form.Group controlId="formBasicEmail">
                             <Form.Label>Correo *</Form.Label>
@@ -120,7 +123,6 @@ const LoginPage = () => {
                             {error && <Alert variant="danger">Todos los campos son obligatorios y deben ser válidos.</Alert>}
                         </div>
                     </Form>
-                    <ToastContainer />
                 </Col>
             </Row>
         </Container>

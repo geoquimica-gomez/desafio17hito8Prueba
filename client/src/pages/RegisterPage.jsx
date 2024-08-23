@@ -1,49 +1,36 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Container, Row, Col, Form, Button, InputGroup, Alert } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { ToastContainer, toast } from 'react-toastify';
+import { UserContext } from '../context/UserContext';
 
 const RegisterPage = () => {
-    // Estados del formulario
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
-
-    // Estado para los errores
     const [error, setError] = useState('');
-    
-    // Funciones para validar los campos
+    const { register, notification } = useContext(UserContext);
+
     const isEmailValid = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const isPasswordValid = () => password.length >= 6;
     const doPasswordsMatch = () => password === repeatPassword;
 
-    // Función antes de enviar el formulario
-    const validarDatos = (e) => {
+    const validarDatos = async (e) => {
         e.preventDefault();
-        let errorMsg = '';
 
-        if (!email.trim() || !password.trim() || !repeatPassword.trim()) {
-            errorMsg = 'Todos los campos son obligatorios.';
-        } else if (!isEmailValid()) {
-            errorMsg = 'El correo no es válido.';
-        } else if (!isPasswordValid()) {
-            errorMsg = 'La contraseña debe tener al menos 6 caracteres.';
-        } else if (!doPasswordsMatch()) {
-            errorMsg = 'Las contraseñas no coinciden.';
-        }
-
-        if (errorMsg) {
-            setError(errorMsg);
+        if (!email.trim() || !password.trim() || !isEmailValid() || !isPasswordValid() || !doPasswordsMatch()) {
+            setError('Todos los campos son obligatorios y deben ser válidos.');
             return;
         }
 
         setError('');
-        setEmail('');
-        setPassword('');
-        setRepeatPassword('');
 
-        toast.success("¡Registro exitoso!");
+        try {
+            await register(email, password);
+        } catch (error) {
+            console.error("Error en el registro:", error);
+            setError('Hubo un problema con el registro. Inténtalo más tarde.');
+        }
     };
 
     return (
@@ -52,7 +39,7 @@ const RegisterPage = () => {
             className="p-3"
             style={{
                 maxWidth: '70%',
-                backgroundColor: 'rgba(249, 203, 50, 0.324)',
+                backgroundColor: '#f7886748',
                 margin: '10px auto',
                 borderRadius: '10px',
                 borderTop: '10px solid #333',
@@ -68,10 +55,15 @@ const RegisterPage = () => {
                     />
                 </Col>
                 <Col md={8}>
-                    <h1>¡Regístrate!</h1>
-                    <h6> <strong>Para usuarios registrados:</strong> ¡Desbloquea ofertas exclusivas y ahorra en cada compra!</h6>
+                    <h1>Regístrate</h1>
+                    <h6>Únete a nuestra comunidad y disfruta de la mejor pizza!</h6>
+                    {notification.message && (
+                        <Alert variant={notification.type}>
+                            {notification.message}
+                        </Alert>
+                    )}
                     <Form className='customForm' onSubmit={validarDatos}>
-                        <Form.Group controlId="formBasicEmail" className='mt-2'>
+                        <Form.Group controlId="formBasicEmail">
                             <Form.Label>Correo *</Form.Label>
                             <InputGroup>
                                 <InputGroup.Text>
@@ -99,7 +91,7 @@ const RegisterPage = () => {
                             </InputGroup>
                         </Form.Group>
 
-                        <Form.Group controlId="formBasicPassword" className='mt-2'>
+                        <Form.Group controlId="formBasicPassword">
                             <Form.Label>Contraseña *</Form.Label>
                             <InputGroup>
                                 <InputGroup.Text>
@@ -127,15 +119,15 @@ const RegisterPage = () => {
                             </InputGroup>
                         </Form.Group>
 
-                        <Form.Group controlId="formRepeatPassword" className='mt-2'>
-                            <Form.Label>Repetir contraseña *</Form.Label>
+                        <Form.Group controlId="formBasicRepeatPassword">
+                            <Form.Label>Repite Contraseña *</Form.Label>
                             <InputGroup>
                                 <InputGroup.Text>
                                     <FontAwesomeIcon icon={faLock} />
                                 </InputGroup.Text>
                                 <Form.Control
                                     type="password"
-                                    placeholder="Repetir contraseña"
+                                    placeholder="Repite la contraseña"
                                     onChange={(e) => setRepeatPassword(e.target.value)}
                                     value={repeatPassword}
                                     isInvalid={!doPasswordsMatch() && repeatPassword.trim() !== ''}
@@ -156,13 +148,12 @@ const RegisterPage = () => {
                         </Form.Group>
 
                         <Button type="submit" className='btn3' style={{ width: '100%', marginTop: '15px' }}>
-                            ¡Regístrate!
+                            Registrarse
                         </Button>
                         <div className="mt-3">
                             {error && <Alert variant="danger">{error}</Alert>}
                         </div>
                     </Form>
-                    <ToastContainer />
                 </Col>
             </Row>
         </Container>
