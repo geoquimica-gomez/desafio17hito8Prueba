@@ -13,7 +13,7 @@
 
 1. Clona el repositorio:
     ```bash
-    git clone https://github.com/geoquimica-gomez/desafio17Hito7.git
+    git clone https://github.com/geoquimica-gomez/desafio17hito8Prueba
     ```
 
 2. Navega al directorio del proyecto:
@@ -62,4 +62,3 @@ Si deseas contribuir a este proyecto, por favor sigue los siguientes pasos:
 ## Licencia
 
 Este proyecto está licenciado bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
-
