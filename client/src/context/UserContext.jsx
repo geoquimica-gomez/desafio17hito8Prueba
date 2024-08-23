@@ -4,6 +4,12 @@ import { useNavigate } from 'react-router-dom';
 
 export const UserContext = createContext();
 
+const API_BASE_URL = "http://localhost:5000/api";
+const LOGIN_URL = `${API_BASE_URL}/auth/login`;
+const REGISTER_URL = `${API_BASE_URL}/auth/register`;
+const USER_INFO_URL = `${API_BASE_URL}/auth/me`;
+const CHECKOUT_URL = `${API_BASE_URL}/checkout`;
+
 export const UserProvider = ({ children }) => {
     const [token, setToken] = useState(null);
     const [email, setEmail] = useState(null);
@@ -11,83 +17,25 @@ export const UserProvider = ({ children }) => {
     const [notification, setNotification] = useState({ message: '', type: '' });
     const navigate = useNavigate();
 
-    // Método para obtener la información del usuario
-    const getUserInfo = useCallback(async () => {
-        if (!token) return;
+    const handleFetchResponse = async (response, successMessage, errorMessage) => {
+        const data = await response.json();
+        console.log(`Respuesta del servidor (${successMessage}):`, data);
 
-        try {
-            const response = await fetch("http://localhost:5000/api/auth/me", {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const data = await response.json();
-            console.log("Respuesta del servidor (getUserInfo):", data);
-
-            if (response.ok) {
-                setUserInfo(data);
-                setNotification({ message: "Información del usuario obtenida con éxito!", type: "success" });
-            } else {
-                setNotification({ message: data.error || "Error al obtener la información del usuario.", type: "danger" });
-                console.error("Error al obtener la información del usuario:", data.error || "Error desconocido");
-            }
-        } catch (error) {
-            console.error("Failed to fetch user info:", error);
-            setNotification({ message: "Error al conectar con el servidor. Inténtalo de nuevo más tarde.", type: "danger" });
+        if (response.ok) {
+            setNotification({ message: successMessage, type: 'success' });
+            return data;
+        } else {
+            setNotification({ message: data.error || errorMessage, type: 'danger' });
+            console.error(`${errorMessage}:`, data.error || 'Error desconocido');
+            return null;
         }
-    }, [token]);
-
-    // Método para enviar el carrito de compras al backend
-    const checkoutCart = useCallback(async (cart) => {
-        console.log("Iniciando el checkout con el carrito:", cart);
-    
-        if (!token) {
-            setNotification({ message: "Por favor, inicia sesión para continuar con el pago.", type: "danger" });
-            navigate('/login');
-            return;
-        }
-    
-        try {
-            console.log("Enviando solicitud a http://localhost:5000/api/checkout");
-    
-            const response = await fetch("http://localhost:5000/api/checkout", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ cart })
-            });
-    
-            console.log("Respuesta del servidor (raw):", response);
-    
-            const data = await response.json();
-            console.log("Respuesta del servidor (checkout):", data);
-    
-            if (response.ok) {
-                setNotification({ message: "Compra realizada con éxito!", type: "success" });
-                return true;
-            } else {
-                setNotification({ message: data.error || "Error durante el proceso de compra.", type: "danger" });
-                console.error("Error durante el checkout:", data.error || "Error desconocido");
-                return false;
-            }
-        } catch (error) {
-            console.error("Checkout failed:", error);
-            setNotification({ message: "Error al conectar con el servidor. Inténtalo de nuevo más tarde.", type: "danger" });
-            return false;
-        }
-    }, [token, navigate]);
-    
+    };
 
     const login = useCallback(async (email, password) => {
         console.log("Intentando iniciar sesión con el email:", email);
 
         try {
-            const response = await fetch("http://localhost:5000/api/auth/login", {
+            const response = await fetch(LOGIN_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -95,19 +43,12 @@ export const UserProvider = ({ children }) => {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
-            console.log("Respuesta del servidor (login):", data);
-
-            if (response.ok) {
+            const data = await handleFetchResponse(response, "Has iniciado sesión correctamente!", "Error durante el inicio de sesión.");
+            if (data) {
                 setToken(data.token);
                 setEmail(data.email);
                 localStorage.setItem("token", data.token);
-                setNotification({ message: "Has iniciado sesión correctamente!", type: "success" });
-                console.log("Inicio de sesión exitoso. Token guardado:", data.token);
                 navigate('/profile');
-            } else {
-                setNotification({ message: data.error || "Error durante el inicio de sesión.", type: "danger" });
-                console.error("Error al iniciar sesión:", data.error || "Error desconocido");
             }
         } catch (error) {
             console.error("Login failed:", error);
@@ -119,7 +60,7 @@ export const UserProvider = ({ children }) => {
         console.log("Intentando registrar con el email:", email);
 
         try {
-            const response = await fetch("http://localhost:5000/api/auth/register", {
+            const response = await fetch(REGISTER_URL, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -127,19 +68,12 @@ export const UserProvider = ({ children }) => {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
-            console.log("Respuesta del servidor (register):", data);
-
-            if (response.ok) {
+            const data = await handleFetchResponse(response, "Registro exitoso!", "Error durante el registro.");
+            if (data) {
                 setToken(data.token);
                 setEmail(data.email);
                 localStorage.setItem("token", data.token);
-                setNotification({ message: "Registro exitoso!", type: "success" });
-                console.log("Registro exitoso. Token guardado:", data.token);
                 navigate('/profile');
-            } else {
-                setNotification({ message: data.error || "Error durante el registro.", type: "danger" });
-                console.error("Error durante el registro:", data.error || "Error desconocido");
             }
         } catch (error) {
             console.error("Registration failed:", error);
@@ -156,6 +90,54 @@ export const UserProvider = ({ children }) => {
         console.log("Sesión cerrada. Token eliminado.");
         navigate('/login');
     }, [navigate]);
+
+    const getUserInfo = useCallback(async () => {
+        if (!token) return;
+
+        try {
+            const response = await fetch(USER_INFO_URL, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await handleFetchResponse(response, "Información del usuario obtenida con éxito!", "Error al obtener la información del usuario.");
+            if (data) setUserInfo(data);
+        } catch (error) {
+            console.error("Failed to fetch user info:", error);
+            setNotification({ message: "Error al conectar con el servidor. Inténtalo de nuevo más tarde.", type: "danger" });
+        }
+    }, [token]);
+
+    const checkoutCart = useCallback(async (cart) => {
+        console.log("Iniciando el checkout con el carrito:", cart);
+
+        if (!token) {
+            setNotification({ message: "Por favor, inicia sesión para continuar con el pago.", type: "danger" });
+            navigate('/login');
+            return false;
+        }
+
+        try {
+            const response = await fetch(CHECKOUT_URL, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ cart }),
+            });
+
+            const data = await handleFetchResponse(response, "Compra realizada con éxito!", "Error durante el proceso de compra.");
+            return data ? true : false;
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            setNotification({ message: "Error al conectar con el servidor. Inténtalo de nuevo más tarde.", type: "danger" });
+            return false;
+        }
+    }, [token, navigate]);
 
     useEffect(() => {
         if (token) {
