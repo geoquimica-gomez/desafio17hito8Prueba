@@ -131,7 +131,7 @@ export const UserProvider = ({ children }) => {
             });
 
             const data = await handleFetchResponse(response, "Compra realizada con éxito!", "Error durante el proceso de compra.");
-            return data ? true : false;
+            return !!data;
         } catch (error) {
             console.error("Checkout failed:", error);
             setNotification({ message: "Error al conectar con el servidor. Inténtalo de nuevo más tarde.", type: "danger" });

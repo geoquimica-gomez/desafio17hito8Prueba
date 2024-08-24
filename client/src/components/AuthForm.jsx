@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 import Input from '../components/Input';
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
 
 const AuthForm = ({ onSubmit, buttonText, showRepeatPassword }) => {
     const [email, setEmail] = useState('');
@@ -78,4 +79,15 @@ const AuthForm = ({ onSubmit, buttonText, showRepeatPassword }) => {
     );
 };
 
+AuthForm.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+    buttonText: PropTypes.string.isRequired,
+    showRepeatPassword: PropTypes.bool
+};
+
+AuthForm.defaultProps = {
+    showRepeatPassword: false
+};
+
 export default AuthForm;
+

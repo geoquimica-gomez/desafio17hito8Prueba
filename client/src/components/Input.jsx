@@ -1,9 +1,20 @@
-
+import PropTypes from 'prop-types';
 import { Form, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
 
-const Input = ({ controlId, label, type, placeholder, value, onChange, isValid, feedbackText, icon, ...props }) => {
+const Input = ({
+    controlId,
+    label,
+    type,
+    placeholder,
+    value,
+    onChange,
+    isValid,
+    feedbackText,
+    icon,
+    ...props
+}) => {
     return (
         <Form.Group controlId={controlId}>
             {label && <Form.Label>{label}</Form.Label>}
@@ -23,7 +34,7 @@ const Input = ({ controlId, label, type, placeholder, value, onChange, isValid, 
                         borderColor: isValid() ? 'green' : '',
                         borderWidth: isValid() ? '2px' : '',
                     }}
-                    {...props} // Pasar cualquier propiedad adicional
+                    {...props}
                 />
                 <Form.Control.Feedback type="invalid">
                     {feedbackText}
@@ -38,4 +49,24 @@ const Input = ({ controlId, label, type, placeholder, value, onChange, isValid, 
     );
 };
 
+Input.propTypes = {
+    controlId: PropTypes.string.isRequired,
+    label: PropTypes.string,
+    type: PropTypes.string.isRequired,
+    placeholder: PropTypes.string,
+    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+    isValid: PropTypes.func.isRequired,
+    feedbackText: PropTypes.string,
+    icon: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+};
+
+Input.defaultProps = {
+    label: '',
+    placeholder: '',
+    feedbackText: '',
+    icon: null,
+};
+
 export default Input;
+
