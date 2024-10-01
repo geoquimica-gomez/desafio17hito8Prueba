@@ -8,7 +8,7 @@ const API_BASE_URL = "http://localhost:5000/api";
 const LOGIN_URL = `${API_BASE_URL}/auth/login`;
 const REGISTER_URL = `${API_BASE_URL}/auth/register`;
 const USER_INFO_URL = `${API_BASE_URL}/auth/me`;
-const CHECKOUT_URL = `${API_BASE_URL}/checkout`;
+const CHECKOUT_URL = `${API_BASE_URL}/checkouts`;
 
 export const UserProvider = ({ children }) => {
     const [token, setToken] = useState(null);
